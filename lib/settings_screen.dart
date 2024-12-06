@@ -1,10 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mail/login_screen.dart';
 import 'preferences_service.dart';
-import 'login_screen.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -14,209 +10,208 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final PreferencesService _preferencesService = PreferencesService();
-  bool _isLoading = false;
-  String? _message;
-  bool _notificationsEnabled = true;
+  final _preferencesService = PreferencesService();
   bool _darkMode = false;
-  double _fontSize = 16.0;
-  String? _profilePicUrl;
+  bool _autoAnswer = false;
+  bool _notification = false;
+  String _autoAnswerMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _loadPreferences();
   }
 
-  // Load settings (e.g., dark mode, notifications, language)
-  Future<void> _loadSettings() async {
-    final notificationsEnabled = await _preferencesService.getNotificationsEnabled();
-    final darkMode = await _preferencesService.getDarkMode();
-    final fontSize = await _preferencesService.getFontSize();
-    final language = await _preferencesService.getLanguage();
-    
-    setState(() {
-      _notificationsEnabled = notificationsEnabled;
-      _darkMode = darkMode;
-      _fontSize = fontSize;
+  void _loadPreferences() async {
+    final theme = await _preferencesService.getTheme();
+    final autoAnswer = await _preferencesService.getAutoAnswer();
+    final notification = await _preferencesService.getNotification();
 
+    setState(() {
+      _darkMode = theme;
+      _autoAnswer = autoAnswer['enabled'];
+      _autoAnswerMessage = autoAnswer['message'];
+      _notification = notification;
     });
   }
 
-  // Save settings
-  void _saveSettings() async {
-    await _preferencesService.setNotificationsEnabled(_notificationsEnabled);
-    await _preferencesService.setDarkMode(_darkMode);
-    await _preferencesService.setFontSize(_fontSize);
-
+  void _savePreferences() async {
+    await _preferencesService.saveTheme(_darkMode);
+    await _preferencesService.saveAutoAnswer(_autoAnswer, _autoAnswerMessage);
+    await _preferencesService.saveNotification(_notification);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Settings saved')),
+    );
   }
 
-  // Change profile picture
-  Future<void> _pickProfilePicture() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      setState(() {
-        _profilePicUrl = image.path; // Store path or upload to Firebase
-      });
-    }
+  void _resetPreferences() {
+    setState(() {
+      _darkMode = false;
+      _autoAnswer = false;
+      _autoAnswerMessage = '';
+      _notification = false;
+    });
+    _savePreferences();
   }
 
-  // Sign out the user
-  Future<void> _signOut() async {
-    await _auth.signOut();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-  }
-
-  // Delete the user's account
   Future<void> _deleteAccount() async {
-    setState(() {
-      _isLoading = true;
-      _message = null;
-    });
+    final deleteConfirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'Are you sure you want to delete your account? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    ) ??
+        false;
 
-    try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        // Reauthenticate before deleting the account
-        AuthCredential credential = EmailAuthProvider.credential(
-          email: user.email!,
-          password: 'your_current_password', // Replace with actual password input
-        );
-
-        await user.reauthenticateWithCredential(credential);
-        await user.delete();
-
-        // Log out and redirect to login screen
-        await _auth.signOut();
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-      }
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _message = e.message ?? 'An error occurred during account deletion';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    if (deleteConfirmed) {
+      // Placeholder for delete account logic
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account deleted successfully!')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
-  }
-
-  // Update theme (Dark Mode)
-  void _toggleDarkMode(bool value) {
-    setState(() {
-      _darkMode = value;
-    });
-    _saveSettings(); // Save theme to SharedPreferences
-  }
-
-  // Update font size
-  void _updateFontSize(double value) {
-    setState(() {
-      _fontSize = value;
-    });
-    _saveSettings(); // Save font size to SharedPreferences
-  }
-
-  // Update language selection
-
-  // Toggle notifications
-  void _toggleNotifications(bool value) {
-    setState(() {
-      _notificationsEnabled = value;
-    });
-    _saveSettings(); // Save notification setting to SharedPreferences
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Return to the previous screen
+          },
+        ),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Picture Section
-            GestureDetector(
-              onTap: _pickProfilePicture,
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: _profilePicUrl != null
-                    ? FileImage(File(_profilePicUrl!))
-                    : const AssetImage('assets/default_profile_pic.png') as ImageProvider,
-                child: _profilePicUrl == null
-                    ? const Icon(Icons.add_a_photo, size: 30, color: Colors.white)
-                    : null,
+            const Text(
+              'Personalization',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            SwitchListTile(
+              title: const Text('Dark Mode'),
+              subtitle: const Text('Enable dark theme'),
+              value: _darkMode,
+              onChanged: (value) {
+                setState(() => _darkMode = value);
+                _savePreferences();
+                // Apply the theme change
+                if (_darkMode) {
+                  // Dark theme
+                  ThemeMode.dark;
+                } else {
+                  // Light theme
+                  ThemeMode.light;
+                }
+              },
+            ),
+            const Divider(height: 30),
+            const Text(
+              'Auto Answer',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SwitchListTile(
+              title: const Text('Enable Auto Answer'),
+              subtitle: const Text('Automatically reply to all emails'),
+              value: _autoAnswer,
+              onChanged: (value) {
+                setState(() => _autoAnswer = value);
+                _savePreferences();
+              },
+            ),
+            if (_autoAnswer)
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Auto Answer Message',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                onChanged: (value) {
+                  setState(() => _autoAnswerMessage = value);
+                  _savePreferences();
+                },
+                controller: TextEditingController(text: _autoAnswerMessage),
+              ),
+            const Divider(height: 30),
+                       const Text(
+              'Notifications',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            SwitchListTile(
+              title: const Text('Enable Notifications'),
+              subtitle: const Text('Receive notifications for new messages'),
+              value: _notification,
+              onChanged: (value) {
+                setState(() {
+                  _notification = value;
+                });
+                _savePreferences();
+              },
+            ),
+            const Text(
+              'Account Actions',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            ElevatedButton.icon(
+              onPressed: _deleteAccount,
+              icon: const Icon(Icons.delete),
+              label: const Text('Delete Account'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
               ),
             ),
-            const SizedBox(height: 20),
+            const Divider(height: 30),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final resetConfirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Reset Settings'),
+                        content: const Text('Are you sure you want to reset all settings?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Reset'),
+                          ),
+                        ],
+                      ),
+                    ) ??
+                    false;
 
-            // Notifications Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Enable Notifications'),
-                Switch(
-                  value: _notificationsEnabled,
-                  onChanged: _isLoading ? null : _toggleNotifications,
-                ),
-              ],
+                if (resetConfirmed) {
+                  _resetPreferences();
+                }
+              },
+              icon: const Icon(Icons.restore),
+              label: const Text('Reset to Default'),
             ),
-            const SizedBox(height: 16),
-
-            // Dark Mode Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Dark Mode'),
-                Switch(
-                  value: _darkMode,
-                  onChanged: _isLoading ? null : _toggleDarkMode,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Font Size Section
-            const Text('Font Size'),
-            Slider(
-              value: _fontSize,
-              min: 12.0,
-              max: 24.0,
-              divisions: 12,
-              label: '${_fontSize.toStringAsFixed(1)}',
-              onChanged: _isLoading ? null : _updateFontSize,
-            ),
-            const SizedBox(height: 16),
-
-            // Delete Account Section
-            ElevatedButton(
-              onPressed: _isLoading ? null : _deleteAccount,
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Delete Account'),
-            ),
-            const SizedBox(height: 16),
-
-            // Sign Out Section
-            ElevatedButton(
-              onPressed: _isLoading ? null : _signOut,
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Sign Out'),
-            ),
-            const SizedBox(height: 16),
-
-            // Message Display
-            if (_message != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                _message!,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ]
           ],
         ),
       ),
