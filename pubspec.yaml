@@ -39,6 +39,7 @@ dependencies:
   firebase_auth: ^5.3.3 # Use the latest version
   shared_preferences: ^2.3.3
   firebase: ^9.0.3
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

@@ -16,22 +16,41 @@ class PreferencesService {
     await prefs.setDouble('fontSize', fontSize);
   }
 
+
+  // Save notification setting
+  Future<void> setNotificationsEnabled(bool isEnabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('notifications_enabled', isEnabled);
+  }
+
+  // Get notification setting
+  Future<bool> getNotificationsEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('notifications_enabled') ?? true; // Default is true
+  }
+  Future<void> setDarkMode(bool isDarkMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('dark_mode', isDarkMode);
+  }
+  Future<bool> getDarkMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('dark_mode') ?? false; // Default is false
+  }
+  Future<void> setFontSize(double fontSize) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setDouble('font_size', fontSize);
+  }
   Future<double> getFontSize() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getDouble('fontSize') ?? 14.0;
+    return prefs.getDouble('font_size') ?? 16.0; // Default is 16.0
+  }
+  Future<void> setLanguage(String language) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('language', language);
   }
 
-  Future<void> saveAutoAnswer(bool enabled, String message) async {
+  Future<String> getLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('autoAnswer', enabled);
-    await prefs.setString('autoAnswerMessage', message);
-  }
-
-  Future<Map<String, dynamic>> getAutoAnswer() async {
-    final prefs = await SharedPreferences.getInstance();
-    return {
-      'enabled': prefs.getBool('autoAnswer') ?? false,
-      'message': prefs.getString('autoAnswerMessage') ?? '',
-    };
+    return prefs.getString('language') ?? 'English';  // Default language is English
   }
 }
