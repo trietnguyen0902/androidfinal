@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
 import 'validation_utils.dart';
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -29,8 +31,10 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful')),
       );
-      // Navigate to after Login HERE
-      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SettingsScreen()),);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
@@ -58,6 +62,34 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    String email = FirebaseAuth.instance.currentUser?.email ?? '';
+    if (email.isNotEmpty) {
+      try {
+        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset email sent')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send reset email: $e')),
+        );
+      }
+    }
+
+    try {
+      await _authService.resetPassword(email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset email sent')),
+      );
+      Navigator.pop(context); // Close the reset password dialog after sending email
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
     }
   }
 
@@ -151,6 +183,42 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: const Text('Login'),
                         ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Reset Password'),
+                                  content: TextField(
+                                    controller: _emailController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Enter your phone/email',
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context); // Close dialog
+                                      },
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: _resetPassword,
+                                      child: const Text('Reset Password'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -163,3 +231,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+  

@@ -42,4 +42,14 @@ class PreferencesService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notification', notification);
   }
+  Future<void> saveFontFamily(String fontFamily) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('font_family', fontFamily);
+  }
+
+  Future<String?> getFontFamily() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('font_family');
+  }
+
 }

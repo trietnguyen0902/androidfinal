@@ -36,4 +36,6 @@ class AuthService {
   String _formatEmail(String phone) {
     return '$phone@example.com'; // Simulated email for Firebase
   }
+
+  resetPassword(String email) {}
 }

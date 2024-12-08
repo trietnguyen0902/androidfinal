@@ -1,1 +1,95 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"mailforfinal-7bf12","appId":"1:833820909585:android:1502f763066197751791b0","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"mailforfinal-7bf12","configurations":{"android":"1:833820909585:android:1502f763066197751791b0","ios":"1:833820909585:ios:1c82dda0db1681c51791b0","macos":"1:833820909585:ios:1c82dda0db1681c51791b0","web":"1:833820909585:web:cda0d87b9d6117601791b0","windows":"1:833820909585:web:c0409b2ed68682711791b0"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "mailforfinal-7bf12",
+          "appId": "1:833820909585:android:1502f763066197751791b0",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "mailforfinal-7bf12",
+          "configurations": {
+            "android": "1:833820909585:android:1502f763066197751791b0",
+            "ios": "1:833820909585:ios:1c82dda0db1681c51791b0",
+            "macos": "1:833820909585:ios:1c82dda0db1681c51791b0",
+            "web": "1:833820909585:web:cda0d87b9d6117601791b0",
+            "windows": "1:833820909585:web:c0409b2ed68682711791b0"
+          }
+        }
+      }
+    }
+  },
+  "dataconnect": {
+    "source": "dataconnect"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ],
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "apphosting": {
+      "port": 5002,
+      "rootDirectory": "./"
+    },
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "database": {
+      "port": 9000
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "pubsub": {
+      "port": 8085
+    },
+    "storage": {
+      "port": 9199
+    },
+    "dataconnect": {
+      "port": 9399
+    },
+    "tasks": {
+      "port": 9499
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  }
+}
