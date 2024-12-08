@@ -11,8 +11,32 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
   String _errorMessage = '';
+  final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _deleteAccount() async {
+    final deleteConfirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Account'),
+            content: const Text(
+              'Are you sure you want to delete your account? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!deleteConfirmed) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -22,22 +46,39 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       User? user = _auth.currentUser;
 
       if (user != null) {
-        // Re-authenticate the user if necessary
-        AuthCredential credential = EmailAuthProvider.credential(
-            email: user.email!,
-            password: 'your_current_password'); // Replace with user's password input
+        String email = user.email!;
+        String password = _passwordController.text.trim();
 
-        // Re-authenticate the user to perform sensitive actions like account deletion
+        if (password.isEmpty) {
+          setState(() {
+            _errorMessage = 'Password cannot be empty.';
+          });
+          return;
+        }
+
+        // Re-authenticate the user
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: email,
+          password: password,
+        );
+
         await user.reauthenticateWithCredential(credential);
         await user.delete();
 
-        // After deleting the account, log out and navigate
+        // Sign out and navigate to login screen
         await _auth.signOut();
-        Navigator.push(context,MaterialPageRoute(builder: (context) => const LoginScreen()),);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account deleted successfully.')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = e.message ?? 'An error occurred';
+        _errorMessage = e.message ?? 'An error occurred.';
       });
     } finally {
       setState(() {
@@ -63,6 +104,16 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 style: const TextStyle(color: Colors.red),
               ),
             ],
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Enter your password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isLoading ? null : _deleteAccount,
               child: const Text('Delete Account'),
