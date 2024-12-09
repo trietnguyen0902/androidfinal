@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:mail/home_screen.dart';
 import 'auth_service.dart';
 import 'validation_utils.dart';
-import 'settings_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
