@@ -40,6 +40,16 @@ dependencies:
   shared_preferences: ^2.3.3
   firebase: ^9.0.3
   image_picker: ^1.1.2
+
+  cloud_firestore: ^5.5.0
+  firebase_messaging: ^15.1.5
+  flutter_local_notifications: ^18.0.1
+  http: ^0.13.6
+  file_picker: ^8.1.4
+  firebase_storage: ^12.3.7
+  fluttertoast: ^8.2.8
+  mailer: ^6.3.0
+  flutter_screenutil: ^5.9.3
   provider: ^6.1.2
 
 dev_dependencies:
