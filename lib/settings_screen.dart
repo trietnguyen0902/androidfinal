@@ -230,14 +230,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _logout() async {
+Future<void> _logout() async {
+  try {
+    // Sign out from Firebase
+    await FirebaseAuth.instance.signOut();
+
+    // Update shared preferences to mark the user as logged out
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);  
-    Navigator.pushReplacement(context,
+    await prefs.setBool('isLoggedIn', false);
+
+    // Navigate to the login screen
+    Navigator.pushReplacement(
+      context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
-  }
 
+    // Optional: Show a confirmation message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Logged out successfully')),
+    );
+  } catch (e) {
+    // Handle errors (if any)
+    debugPrint('Logout failed: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error during logout: $e')),
+    );
+  }
+}
 
 
   @override

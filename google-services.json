@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "833820909585",
+    "project_id": "mailforfinal-7bf12",
+    "storage_bucket": "mailforfinal-7bf12.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:833820909585:android:c136b91f278b0b341791b0",
+        "android_client_info": {
+          "package_name": "com.example.mail"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUuntgCUYT9x9hP11HRfNJXR6kvH0JtgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:833820909585:android:1502f763066197751791b0",
+        "android_client_info": {
+          "package_name": "com.final.mail"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUuntgCUYT9x9hP11HRfNJXR6kvH0JtgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

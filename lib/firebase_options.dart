@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -33,7 +32,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCyx0jSPQ5IaTsUQbpaDrDwPnRP7qCWGnU',
-    appId: '1:833820909585:web:cda0d87b9d6117601791b0',
+    appId: '1:833820909585:web:c0409b2ed68682711791b0',
     messagingSenderId: '833820909585',
     projectId: 'mailforfinal-7bf12',
     authDomain: 'mailforfinal-7bf12.firebaseapp.com',
@@ -42,7 +41,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAUuntgCUYT9x9hP11HRfNJXR6kvH0JtgY',
-    appId: '1:833820909585:android:1502f763066197751791b0',
+    appId: '1:833820909585:android:c136b91f278b0b341791b0',
     messagingSenderId: '833820909585',
     projectId: 'mailforfinal-7bf12',
     storageBucket: 'mailforfinal-7bf12.firebasestorage.app',
@@ -74,4 +73,5 @@ class DefaultFirebaseOptions {
     authDomain: 'mailforfinal-7bf12.firebaseapp.com',
     storageBucket: 'mailforfinal-7bf12.firebasestorage.app',
   );
+
 }
