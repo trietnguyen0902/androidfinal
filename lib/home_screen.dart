@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mail/FavoritedMail.dart';
+import 'package:mail/Trash_screen.dart';
 import 'package:mail/auth_service.dart';
 import 'package:mail/compose_email_screen.dart';
+import 'package:mail/draft_screen.dart';
+import 'package:mail/sent_mail.dart';
 import 'package:mail/settings_screen.dart';
 import 'email_list.dart';
 import 'search_screen.dart';
@@ -52,13 +56,14 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
+           
             ListTile(
               leading: Icon(Icons.send),
               title: Text('Sent'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EmailList(category: 'sent')),
+                  MaterialPageRoute(builder: (context) => SentMail()), 
                 );
               },
             ),
@@ -68,7 +73,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EmailList(category: 'drafts')),
+                  MaterialPageRoute(builder: (context) => DraftsScreen()),
                 );
               },
             ),
@@ -78,7 +83,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EmailList(category: 'starred')),
+                  MaterialPageRoute(builder: (context) => StarredMail()),
                 );
               },
             ),
@@ -88,7 +93,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EmailList(category: 'trashed')),
+                  MaterialPageRoute(builder: (context) => TrashMailScreen()),
                 );
               },
             ),
@@ -117,7 +122,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: EmailList(category: 'inbox'), // Displaying inbox with mock emails
+      body: EmailList(category: 'inbox'), 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

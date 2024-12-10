@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:mail/font_setting.dart';
 import 'package:mail/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'preferences_service.dart';
-import 'font_setting.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,7 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notification = false;
   String _autoAnswerMessage = '';
   String _displayName = FirebaseAuth.instance.currentUser?.displayName ?? '';
-  TextEditingController _autoAnswerController = TextEditingController(); // Persistent controller
+  TextEditingController _autoAnswerController = TextEditingController(); 
 
   @override
   void initState() {
@@ -32,14 +33,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = await _preferencesService.getTheme();
     final autoAnswer = await _preferencesService.getAutoAnswer();
     final notification = await _preferencesService.getNotification();
-
+    final fontSize = await _preferencesService.getFontSize();
+    final fontFamily = await _preferencesService.getFontFamily();
+    
     setState(() {
       _darkMode = theme;
       _autoAnswer = autoAnswer['enabled'];
       _autoAnswerMessage = autoAnswer['message'];
       _notification = notification;
       _displayName = FirebaseAuth.instance.currentUser?.displayName ?? '';
-      _autoAnswerController.text = _autoAnswerMessage; // Set the initial text to the controller
+      _autoAnswerController.text = _autoAnswerMessage; 
+
+      // Update the font settings in the provider
+      final fontSettings = Provider.of<FontSettingsProvider>(context, listen: false);
+      fontSettings.setFontSize(fontSize);
+      fontSettings.setFontFamily(fontFamily!);
     });
   }
 
@@ -222,27 +230,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-Future<void> _logout() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isLoggedIn', false);  // Clear the logged-in state
-  Navigator.pushReplacement(context,
-    MaterialPageRoute(builder: (context) => const LoginScreen()),
-  );
-}
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);  
+    Navigator.pushReplacement(context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
-    final fontSettings = Provider.of<FontSettingsProvider>(context);
+    final settings = Provider.of<FontSettingsProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Return to the previous screen
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -257,10 +261,9 @@ Future<void> _logout() async {
             SwitchListTile(
               title: const Text('Dark Mode'),
               subtitle: const Text('Enable dark theme'),
-              value: _darkMode,
+              value: settings.isDarkMode,
               onChanged: (value) {
-                setState(() => _darkMode = value);
-                _savePreferences();
+                settings.toggleDarkMode();
               },
             ),
             const Text(
@@ -270,7 +273,7 @@ Future<void> _logout() async {
             const SizedBox(height: 10),
             const Text('Font Size:'),
             DropdownButton<double>(
-              value: fontSettings.fontSize,
+              value: settings.fontSize,
               items: [12.0, 14.0, 16.0, 18.0, 20.0, 24.0, 28.0, 32.0]
                   .map((size) => DropdownMenuItem(
                         value: size,
@@ -278,13 +281,13 @@ Future<void> _logout() async {
                       ))
                   .toList(),
               onChanged: (newFontSize) {
-                fontSettings.setFontSize(newFontSize!);
+                settings.setFontSize(newFontSize!);
               },
             ),
             const SizedBox(height: 20),
             const Text('Font Family:'),
             DropdownButton<String>(
-              value: fontSettings.fontFamily,
+              value: settings.fontFamily,
               items: ['Arial', 'Courier', 'Roboto', 'Times New Roman']
                   .map((family) => DropdownMenuItem(
                         value: family,
@@ -292,7 +295,7 @@ Future<void> _logout() async {
                       ))
                   .toList(),
               onChanged: (newFontFamily) {
-                fontSettings.setFontFamily(newFontFamily!);
+                settings.setFontFamily(newFontFamily!);
               },
             ),
             const Divider(height: 30),

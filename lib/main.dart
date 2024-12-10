@@ -1,17 +1,19 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:mail/font_setting.dart';
-import 'package:provider/provider.dart';
-import 'firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:mail/compose_email_screen.dart';
+import 'package:mail/draft_screen.dart';
+import 'package:provider/provider.dart';
+import 'font_setting.dart';
+import 'firebase_options.dart';
 import 'login_screen.dart';
 import 'settings_screen.dart';
 import 'home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
+ 
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   } catch (e) {
@@ -20,7 +22,7 @@ void main() async {
 
   // Check if the user is logged in
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false; // Default to false if not set
+  bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false; 
 
   runApp(
     ChangeNotifierProvider(
@@ -37,38 +39,40 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Watch for font settings changes in the provider
     final fontSettings = context.watch<FontSettingsProvider>();
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Email Service Test',
       theme: ThemeData(
+        brightness: fontSettings.isDarkMode ? Brightness.dark : Brightness.light,
         textTheme: TextTheme(
-          bodyLarge: TextStyle(fontSize: fontSettings.fontSize), // Apply font size from provider
-          bodyMedium: TextStyle(fontFamily: fontSettings.fontFamily), // Apply font family from provider
+          bodyLarge: TextStyle(fontSize: fontSettings.fontSize), 
+          bodyMedium: TextStyle(fontFamily: fontSettings.fontFamily), 
         ),
       ),
       darkTheme: ThemeData.dark().copyWith(
         textTheme: TextTheme(
-          bodyLarge: TextStyle(fontSize: fontSettings.fontSize), // Apply font size from provider
-          bodyMedium: TextStyle(fontFamily: fontSettings.fontFamily), // Apply font family from provider
+          bodyLarge: TextStyle(fontSize: fontSettings.fontSize), 
+          bodyMedium: TextStyle(fontFamily: fontSettings.fontFamily), 
         ),
       ),
-      themeMode: ThemeMode.system, // Use system theme mode (light/dark)
-
-      initialRoute: isLoggedIn ? '/' : '/login', // Determine the initial screen based on login state
+      themeMode: fontSettings.isDarkMode ? ThemeMode.dark : ThemeMode.light, 
+      initialRoute: isLoggedIn ? '/' : '/login', 
       routes: {
-        '/': (context) => HomeScreen(), // Home screen after login
-        '/login': (context) => LoginScreen(), // Login screen
-        '/settings': (context) => SettingsScreen(), // Settings screen
+        '/': (context) => HomeScreen(), 
+        '/login': (context) => const LoginScreen(), 
+        '/settings': (context) => const SettingsScreen(), 
+        '/compose': (context) => const ComposeEmailScreen(), 
+        '/drafts': (context) => const DraftsScreen(), 
       },
       builder: (context, child) {
         return Directionality(
-          textDirection: TextDirection.ltr, // Forces LTR globally
+          textDirection: TextDirection.ltr, 
           child: child!,
         );
       },
     );
   }
 }
+

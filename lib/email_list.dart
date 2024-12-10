@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mail/auth_service.dart';
-import 'package:mail/email_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'email_model.dart';
+import 'email_detail.dart';
 
-class EmailList extends StatelessWidget {
+class EmailList extends StatefulWidget {
   final String category;
   final String? keyword;
 
   EmailList({required this.category, this.keyword});
 
- 
+  @override
+  _EmailListState createState() => _EmailListState();
+}
+
+class _EmailListState extends State<EmailList> {
   final List<Email> mockEmails = [
     Email(
       id: '1',
@@ -23,18 +27,20 @@ class EmailList extends StatelessWidget {
       isStarred: false,
       labels: [],
       isTrashed: false,
+      isDraft: false, 
     ),
     Email(
       id: '2',
       from: 'thangngu@gmail.com',
       to: 'you@gmail.com',
-      subject: 'bài tập về nhà',
+      subject: 'Bài tập về nhà',
       body: 'ê m làm xong bài kia chưa chỉ t với, bài nó khó vãi ra!',
       date: DateTime.now().subtract(Duration(days: 2)),
       isRead: true,
-      isStarred: true,
+      isStarred: false,
       labels: [],
       isTrashed: false,
+      isDraft: false, 
     ),
     Email(
       id: '3',
@@ -47,31 +53,63 @@ class EmailList extends StatelessWidget {
       isStarred: false,
       labels: [],
       isTrashed: false,
+      isDraft: false, 
     ),
     Email(
       id: '4',
       from: 'teacher@gmail.com',
       to: 'you@gmail.com',
       subject: 'Project',
-      body: 'em xong project chưa? gửi gấp cho thầy nha sắp hét deadline r',
+      body: 'em xong project chưa? gửi gấp cho thầy nha sắp hết deadline r',
       date: DateTime.now().subtract(Duration(days: 2)),
       isRead: true,
-      isStarred: true,
+      isStarred: false,
       labels: [],
       isTrashed: false,
+      isDraft: false, 
     ),
-    
+     Email(
+      id: '5',
+      from: 'parents@gmail.com',
+      to: 'you@gmail.com',
+      subject: 'Tết',
+      body: 'Tết này con có vè quê chơi k con? nếu có thì nhớ dẫn bồ con về giới thiệu cho cả nhà luôn nhé',
+      date: DateTime.now().subtract(Duration(days: 2)),
+      isRead: true,
+      isStarred: false,
+      labels: [],
+      isTrashed: false,
+      isDraft: false, 
+    ),
+     Email(
+      id: '6',
+      from: 'anh@gmail.com',
+      to: 'you@gmail.com',
+      subject: 'Tiền nợ',
+      body: 'ê bữa m còn nợ t 500k nhớ trả nha, STK: 12313125152, Vietcombank',
+      date: DateTime.now().subtract(Duration(days: 2)),
+      isRead: true,
+      isStarred: false,
+      labels: [],
+      isTrashed: false,
+      isDraft: false, 
+    ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     Query query = FirebaseFirestore.instance.collection('emails');
-    switch (category) {
+    switch (widget.category) {
       case 'inbox':
-        query = query.where('isTrashed', isEqualTo: false);
+        query = query.where('to', isEqualTo: FirebaseAuth.instance.currentUser!.email).where('isTrashed', isEqualTo: false);
         break;
       case 'sent':
-        query = query.where('from', isEqualTo: AuthService().currentUser!.email);
+        query = query.where('from', isEqualTo: FirebaseAuth.instance.currentUser!.email);
         break;
       case 'drafts':
         query = query.where('isDraft', isEqualTo: true);
@@ -84,52 +122,55 @@ class EmailList extends StatelessWidget {
         break;
     }
 
-    if (keyword != null && keyword!.isNotEmpty) {
-      query = query.where('subject', isGreaterThanOrEqualTo: keyword).where('subject', isLessThanOrEqualTo: keyword! + '\uf8ff');
+    if (widget.keyword != null && widget.keyword!.isNotEmpty) {
+      query = query.where('subject', isGreaterThanOrEqualTo: widget.keyword).where('subject', isLessThanOrEqualTo: widget.keyword! + '\uf8ff');
     }
 
     return StreamBuilder(
       stream: query.snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        List<Email> emails = [];
-        
-        if (snapshot.hasData) {
-          emails = snapshot.data!.docs.map((doc) => Email(
-            id: doc['id'],
-            from: doc['from'],
-            to: doc['to'],
-            subject: doc['subject'],
-            body: doc['body'],
-            date: doc['date'].toDate(),
-            isRead: doc['isRead'],
-            isStarred: doc['isStarred'],
-            labels: List<String>.from(doc['labels']),
-            isTrashed: doc['isTrashed'],
-          )).toList();
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
         }
 
-        // Always display mock emails
-        emails.addAll(mockEmails);
+        List<Email> emails = snapshot.data!.docs.map((doc) => Email(
+          id: doc.id,
+          from: doc['from'],
+          to: doc['to'],
+          subject: doc['subject'],
+          body: doc['body'],
+          date: doc['date'].toDate(),
+          isRead: doc['isRead'],
+          isStarred: doc['isStarred'],
+          labels: List<String>.from(doc['labels']),
+          isTrashed: doc['isTrashed'],
+          isDraft: doc['isDraft'],
+        )).toList();
+
+        
+        if (widget.category != 'trashed' && widget.category != 'drafts') {
+          if (widget.category == 'starred') {
+            emails.addAll(mockEmails.where((email) => email.isStarred));
+          } else {
+            emails.addAll(mockEmails);
+          }
+        }
 
         return ListView.builder(
           itemCount: emails.length,
           itemBuilder: (context, index) {
             var email = emails[index];
-            return ListTile(
-              title: Text(email.subject, style: TextStyle(fontWeight: email.isRead ? FontWeight.normal : FontWeight.bold)),
-              subtitle: Text('${email.from} • ${email.body}'),
-              trailing: IconButton(
-                icon: email.isStarred ? Icon(Icons.star, color: Colors.yellow) : Icon(Icons.star_border),
-                onPressed: () {
-                  // Handle star toggle
+            return Card(
+              child: ListTile(
+                title: Text(email.subject, style: TextStyle(fontWeight: email.isRead ? FontWeight.normal : FontWeight.bold)),
+                subtitle: Text('${email.from} • ${email.body}'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EmailDetails(email: email)),
+                  );
                 },
               ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => EmailDetails(email: email)),
-                );
-              },
             );
           },
         );

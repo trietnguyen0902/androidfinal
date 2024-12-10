@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,20 +39,20 @@ class AuthService {
   }
 
   String _formatEmail(String phone) {
-    return '$phone@example.com'; // Simulated email for Firebase
+    return '$phone@example.com'; 
   }
 
   resetPassword(String email) {}
   User? get currentUser {
 
-    // Return the current user from your authentication logic
+    
 
     return FirebaseAuth.instance.currentUser;
 
   }
 Future<void> signOut(BuildContext context) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isLoggedIn', false);  // Clear the logged-in state
+  await prefs.setBool('isLoggedIn', false);  
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(builder: (context) => const LoginScreen()),

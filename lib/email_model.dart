@@ -6,9 +6,10 @@ class Email {
   final String body;
   final DateTime date;
   final bool isRead;
-  final bool isStarred;
+   bool isStarred;
   final List<String> labels;
   final bool isTrashed;
+  final bool isDraft;
 
   Email({
     required this.id,
@@ -21,7 +22,21 @@ class Email {
     required this.isStarred,
     required this.labels,
     required this.isTrashed,
+    required this.isDraft,
   });
 
-  // Add methods to handle metadata, moving to trash, assigning labels, etc.
+  Map<String, dynamic> toMap() {
+    return {
+      'from': from,
+      'to': to,
+      'subject': subject,
+      'body': body,
+      'date': date,
+      'isRead': isRead,
+      'isStarred': isStarred,
+      'labels': labels,
+      'isTrashed': isTrashed,
+      'isDraft': isDraft,
+    };
+  }
 }
